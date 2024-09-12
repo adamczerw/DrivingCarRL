@@ -21,12 +21,9 @@ class Policy(ABC):
             vertical_position, horizontal_position = race.car.vertical_position, race.car.horizontal_position
             vertical_speed = race.car.vertical_speed
             horizontal_speed = race.car.horizontal_speed
-            # action_distribution = policy[vertical_position, horizontal_position, vertical_speed, horizontal_speed].flatten()
-            # #print(action_distribution, np.sum(action_distribution))
-            selected_action = np.random.choice(len(action_distribution), p=action_distribution)
-            vertical_change, horizontal_change = np.unravel_index(selected_action, (3,3))
+            vertical_change, horizontal_change = self.get_action([vertical_position, horizontal_position, vertical_speed, horizontal_speed])
             episode.append([vertical_position, horizontal_position, vertical_speed, horizontal_speed, vertical_change, horizontal_change]) # reward is always -1
-            race.take_action(vertical_change - 1, horizontal_change - 1)     
+            race.take_action(vertical_change, horizontal_change)     
             #print(episode[iter_counter])
             iter_counter += 1
             if iter_counter > 1000000:
@@ -39,8 +36,8 @@ class ActionValue(ABC):
         pass
 
 class Algorithm(ABC):
-    def __init__(self, grid):
-        self.grid = grid
+    def __init__(self, track):
+        self.track = track
         self.Q = None
         self.t_policy = None
     @abstractmethod
