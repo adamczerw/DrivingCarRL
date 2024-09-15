@@ -17,10 +17,10 @@ class TensorActionValue(ActionValue):
         Works in this case beacuse actual action-values are non-zero (negative)."""
     def __init__(self, track):
         super().__init__(track)
-        width, height = self.track.grid.shape 
-        Q = np.zeros((width, height, 6, 6 , 3, 3)) # more elemens then there is (s,a) pairs, but we will just ignore them
-        proper_states_height, proper_states_weight = np.where((self.track.grid == 0) | (self.track.grid==1))  # 0 - start, 1 - track
-        proper_states = list(zip(proper_states_height, proper_states_weight))
+        height, width = self.track.grid.shape 
+        Q = np.zeros((height, width, 6, 6 , 3, 3)) # more elemens then there is (s,a) pairs, but we will just ignore them
+        proper_states_height, proper_states_width = np.where((self.track.grid == 0) | (self.track.grid==1))  # 0 - start, 1 - track
+        proper_states = list(zip(proper_states_height, proper_states_width))
         
         for i,j in proper_states:
             Q[i,j] = 1
@@ -37,7 +37,23 @@ class TensorActionValue(ActionValue):
         
         Q = Q * (-width*height) # arbitrarily choosen starting values
 
-        self.Q = Q
+        self._Q = Q
+
+    @property
+    def Q(self):
+        return self._Q
+    
+    @Q.setter
+    def Q(self, value):
+        self._Q = value
+    
+    def __getitem__(self, key):
+        return self._Q[key]
+    
+    def __setitem__(self, key, value):
+        self._Q[key] = value
 
     def get_value(self, state, action):
-        return self.Q[tuple(state+action)]
+        return self._Q[tuple(state+[i+1 for i in action])]
+
+        
